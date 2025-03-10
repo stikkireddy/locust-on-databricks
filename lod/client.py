@@ -53,7 +53,7 @@ class LocustClient:
         endpoint = f"{self._base_url}/stop"
 
         try:
-            response = self._session.post(endpoint)
+            response = self._session.get(endpoint)
             response.raise_for_status()  # Raise exception for 4XX/5XX responses
             print(f"Swarm stopped successfully: {response.text}")
             return response
