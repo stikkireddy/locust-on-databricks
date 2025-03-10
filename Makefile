@@ -19,3 +19,5 @@ dev:
 	@echo "Installing development dependencies..."
 	@pip install ".[dev]"
 	@echo "Finished installing development dependencies..."
+
+.PHONY: build
