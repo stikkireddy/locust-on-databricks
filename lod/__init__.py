@@ -1,2 +1,2 @@
-from runner import LocustRunner
-from client import LocustClient
+from lod.runner import LocustRunner
+from lod.client import LocustClient
