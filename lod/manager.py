@@ -210,7 +210,7 @@ class LocustDistributedManager(LocustBaseManager):
             return _executor_name, worker_ip, worker_pid
 
         # Distribute the worker start command using map to collect executor info
-        results = self._spark \
+        results = get_spark() \
             .sparkContext \
             .parallelize(self._worker_names, self._active_number_of_workers) \
             .map(lambda executor_name: start_locust_worker(executor_name, driver_ip, self._process_to_core_count_ratio)) \
