@@ -6,6 +6,13 @@
 pip install locust-on-databricks
 ```
 
+## Planned Features
+
+* adding an option to export to html `runner.export_html(path)`
+* adding option to download exceptions and failures: `runner.export_exceptions(path), runners.export_failures(path)`
+* adding option to download all: `runner.export(path)`
+* adding block_until_end_of_swarm: `runner.block_until_end_of_swarm(timeout_in_seconds=...)`
+
 ## Usage
 
 ### OOTB Examples
@@ -61,8 +68,8 @@ Construct a distributed runner:
 
 ```python
 runner = runner
-    .distributed()
-    .set_initial_swarm(
+.distributed()
+.set_initial_swarm(
     host="https://google.com",
     user_count=10,
     spawn_rate=2,
@@ -74,8 +81,8 @@ Construct a distributed runner with custom worker to core ratio:
 
 ```python
 runner = runner
-    .distributed(process_to_core_count_ratio=2.0)
-    .set_initial_swarm(
+.distributed(process_to_core_count_ratio=2.0)
+.set_initial_swarm(
     host="https://google.com",
     user_count=10,
     spawn_rate=2,
