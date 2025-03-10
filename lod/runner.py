@@ -24,7 +24,13 @@ class LocustRunner:
     def start_locust(self) -> int:
         pid = self._locust_manager.start()
         self._is_locust_running = True
-        print(f"Access Locust Web UI at {self._proxy_settings.get_proxy_url(ensure_ends_with_slash=True)}")
+        try:
+            import IPython
+            display_html = IPython.get_ipython().user_ns["displayHTML"]
+            display_text = f'<a href="{self._proxy_settings.get_proxy_url(ensure_ends_with_slash=True)}">Click to go to Access Locust Web UI!</a>'
+            display_html(display_text)
+        except Exception:
+            print(f"Access Locust Web UI at {self._proxy_settings.get_proxy_url(ensure_ends_with_slash=True)}")
         if self._preloaded_locust_swarm:
             print("Preloaded swarm parameters:", self._preloaded_locust_swarm)
             self.run_swarm(**self._preloaded_locust_swarm)
