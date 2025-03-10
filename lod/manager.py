@@ -1,4 +1,5 @@
 import abc
+import time
 
 import psutil
 import socket
@@ -6,6 +7,9 @@ import ipaddress
 import os
 import signal
 import subprocess
+
+import requests
+from requests import RequestException
 
 
 def get_rfc_1918_network_ip():
@@ -26,13 +30,23 @@ def get_rfc_1918_network_ip():
     return None
 
 
-def is_process_open(host: str, port: int, timeout: int = 10) -> bool:
-    """Check if a process is listening on a given host and port."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.settimeout(timeout)
-        return sock.connect_ex((host, port)) == 0  # Returns 0 if open, else error code
+def is_process_running(host: str, port: int, timeout: int = 10) -> bool:
+    start_time = time.time()
+    url = f"http://{host}:{port}/logs"
 
+    while time.time() - start_time < timeout:
+        try:
+            response = requests.get(url, timeout=1)
+            if response.status_code == 200:
+                print("Service is up and running.")
+                return True
+        except RequestException:
+            pass  # Connection failed, will retry
 
+        print("Service not yet running, retrying in 1 second...")
+        time.sleep(1)  # Wait 1 second before retrying
+
+    return False  # Timed out without getting a 200 response
 
 
 class LocustUtils:
@@ -67,13 +81,15 @@ class LocustUtils:
         process = subprocess.Popen(master_cmd.split())
         print(f"Locust started with pid: {process.pid}")
         # Wait for the process to start
-        is_process_open("0.0.0.0", web_port)
+        is_process_running("0.0.0.0", web_port)
         return process.pid
 
     @staticmethod
     def start_driver_on_current_node(file_name: str = "locustfile.py", web_port: int = 8089) -> int:
         master_cmd = f"locust -f {file_name} --master --web-port {web_port}"
         process = subprocess.Popen(master_cmd.split())
+        # Wait for the process to start
+        is_process_running("0.0.0.0", web_port)
         return process.pid
 
     @staticmethod
@@ -83,7 +99,6 @@ class LocustUtils:
         worker_cmd = f"locust -f - --worker --master-host {driver_ip} --processes {num_processes}"
         process = subprocess.Popen(worker_cmd.split())
         return process.pid
-
 
 
 class LocustBaseManager(abc.ABC):
