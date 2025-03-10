@@ -81,10 +81,10 @@ class LocustRunner:
                 run_time=run_time
             )
 
-            timeout_seconds = 10
+            timeout_seconds = 60
             start_time = time.time()
             while True:
-                if self._locust_client.swarm_is_running():
+                if self._locust_client.swarm_is_active():
                     print("Locust swarm is running.")
                     break
                 elif time.time() - start_time > timeout_seconds:
@@ -99,7 +99,7 @@ class LocustRunner:
             import time
             start_time = time.time()
             while True:
-                if self._locust_client.swarm_is_running():
+                if self._locust_client.swarm_is_active():
                     print(f"Locust swarm is running checking again in another: {check_every_n_seconds}.")
                 elif time.time() - start_time > timeout_in_seconds:
                     raise Exception("Timeout waiting for Locust to warm up.")
