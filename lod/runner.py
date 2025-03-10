@@ -80,6 +80,17 @@ class LocustRunner:
                 spawn_rate=spawn_rate,
                 run_time=run_time
             )
+
+            timeout_seconds = 10
+            start_time = time.time()
+            while True:
+                if self._locust_client.swarm_is_running():
+                    print("Locust swarm is running.")
+                    break
+                elif time.time() - start_time > timeout_seconds:
+                    raise Exception("Timeout waiting for Locust to warm up.")
+                time.sleep(0.5)
+
         else:
             raise Exception("Locust is not running. Please start Locust first.")
 
