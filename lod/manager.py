@@ -49,6 +49,28 @@ def is_process_running(host: str, port: int, timeout: int = 10) -> bool:
     return False  # Timed out without getting a 200 response
 
 
+def is_cluster_running(host: str, port: int, timeout: int = 10) -> bool:
+    start_time = time.time()
+    url = f"http://{host}:{port}/logs"
+
+    while time.time() - start_time < timeout:
+        try:
+            response = requests.get(url, timeout=1)
+            if response.status_code == 200:
+                resp_dict = response.json()
+                workers = resp_dict.get("workers")
+                if workers and len(workers) > 0:
+                    print("Cluster is up and running.")
+                    return True
+        except RequestException:
+            pass  # Connection failed, will retry
+
+        print("Cluster not yet ready, retrying in 1 second...")
+        time.sleep(1)  # Wait 1 second before retrying
+
+    return False  # Timed out without getting a 200 response
+
+
 class LocustUtils:
 
     @staticmethod
@@ -218,5 +240,7 @@ class LocustDistributedManager(LocustBaseManager):
 
         for executor, ip, pid in results:
             print(f"Executor {executor}, IP: {ip} - Locust worker started with PID: {pid}")
+
+        is_cluster_running("0.0.0.0", self._web_port, timeout=10)
 
         return driver_pid
