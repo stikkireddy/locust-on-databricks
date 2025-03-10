@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 
 from lod.client import LocustClient
@@ -51,10 +52,10 @@ class LocustRunner:
         self._is_locust_running = False
 
     def set_initial_swarm(self,
-              host: str,
-              user_count: int,
-              spawn_rate: int,
-              run_time: str = "5m"):
+                          host: str,
+                          user_count: int,
+                          spawn_rate: int,
+                          run_time: str = "5m"):
         if self._is_locust_running:
             raise Exception("Locust is already running. Please stop it before setting initial swarm parameters.")
         else:
@@ -79,6 +80,45 @@ class LocustRunner:
                 spawn_rate=spawn_rate,
                 run_time=run_time
             )
+        else:
+            raise Exception("Locust is not running. Please start Locust first.")
+
+    def block_until_end_of_swarm(self, timeout_in_seconds: int, check_every_n_seconds: int = 5):
+        if self._is_locust_running:
+            import time
+            start_time = time.time()
+            while True:
+                if self._locust_client.swarm_is_running():
+                    print(f"Locust swarm is running checking again in another: {check_every_n_seconds}.")
+                elif time.time() - start_time > timeout_in_seconds:
+                    raise Exception("Timeout waiting for Locust to warm up.")
+                else:
+                    time.sleep(check_every_n_seconds)
+        else:
+            raise Exception("Locust is not running. Please start Locust first.")
+
+    def save_artifacts(self, save_directory: str | Path = "artifacts", file_prefix: str = ""):
+        if self._is_locust_running:
+            # ensure directory exists
+            save_dir = Path(save_directory)
+            save_dir.mkdir(parents=True, exist_ok=True)
+            csv_export_dict = self._locust_client.get_csv_exports()
+            html_report = self._locust_client.get_html_report()
+            time_prefix = int(time.time())
+            for export_name, export_content in csv_export_dict.items():
+                with open(str(save_dir / f"{file_prefix}{time_prefix}_{export_name}.csv"), 'w') as f:
+                    f.write(export_content)
+            with open(str(save_dir / f"{file_prefix}{time_prefix}_report.html"), 'w') as f:
+                f.write(html_report)
+        else:
+            raise Exception("Locust is not running. Please start Locust first.")
+
+    def display_report_snapshot(self):
+        if self._is_locust_running:
+            import IPython
+            display_html = IPython.get_ipython().user_ns["displayHTML"]
+            html_content = self._locust_client.get_html_report()
+            display_html(html_content)
         else:
             raise Exception("Locust is not running. Please start Locust first.")
 

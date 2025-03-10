@@ -1,6 +1,12 @@
+from typing import Optional, Literal, Dict
+
 import requests
 
+
 class LocustClient:
+    """
+    Designed entirely based on the code here; https://github.com/locustio/locust/blob/master/locust/web.py
+    """
 
     def __init__(self, server_host: str = "0.0.0.0", server_port: int = 8089):
         self._session = requests.Session()
@@ -60,3 +66,96 @@ class LocustClient:
         except requests.RequestException as e:
             print(f"Error stopping swarm: {str(e)}")
             raise
+
+    def get_state(self) -> Optional[str]:
+        """
+        Get the current state of the Locust swarm.
+
+        Returns:
+            Optional[str]: The current state of the swarm (e.g., 'running', 'stopped'),
+                          or None if the state cannot be determined.
+
+        Raises:
+            requests.RequestException: If there is an error communicating with the Locust server.
+        """
+        endpoint = f"{self._base_url}/stats/requests"
+
+        try:
+            response = self._session.get(endpoint)
+            response.raise_for_status()  # Raise exception for 4XX/5XX responses
+            resp_json = response.json()
+
+            return resp_json.get("state", None)
+        except requests.RequestException as e:
+            print(f"Error getting swarm state: {str(e)}")
+            raise
+
+    def swarm_is_running(self) -> bool:
+        """
+        Check if the Locust swarm is currently running.
+
+        Returns:
+            bool: True if the swarm is in the 'running' state, False otherwise.
+
+        Raises:
+            requests.RequestException: If there is an error communicating with the Locust server.
+        """
+        state = self.get_state()
+        return state is not None and state.lower() == "running"
+
+    def get_html_report(self) -> Optional[str]:
+        """
+        Get the HTML report of the Locust test.
+
+        Returns:
+            Optional[str]: The HTML report as a string, or None if there is an error.
+        """
+        endpoint = f"{self._base_url}/stats/report"
+
+        try:
+            response = self._session.get(endpoint)
+            response.raise_for_status()  # Raise exception for 4XX/5XX responses
+            return response.text
+        except requests.RequestException as e:
+            print(f"Error starting swarm: {str(e)}")
+            raise
+
+    def get_csv_export(self, option: Literal["requests", "requests_full_history", "failures", "exceptions"]):
+        """
+        Get the CSV export of the specified type.
+
+        Args:
+            option: The type of CSV export to retrieve. Must be one of "requests", "requests_full_history", "failures", or "exceptions".
+
+        Returns:
+            str: The CSV export as a string.
+
+        Raises:
+            requests.RequestException: If there is an error communicating with the Locust server.
+        """
+        if option in ["requests", "failures"]:
+            endpoint = f"{self._base_url}/stats/{option}/csv"
+        elif option in ["exceptions", "requests_full_history"]:
+            endpoint = f"{self._base_url}/{option}/csv"
+
+        try:
+            response = self._session.get(endpoint)
+            response.raise_for_status()  # Raise exception for 4XX/5XX responses
+            return response.text
+        except requests.RequestException as e:
+            print(f"Error starting swarm: {str(e)}")
+            raise
+
+    def get_csv_exports(self, options: list[Literal["requests", "failures", "exceptions"]] = None) -> Optional[
+        Dict[str, str]]:
+        """
+        Get multiple CSV exports.
+
+        Args:
+            options: A list of CSV export types to retrieve. Defaults to ["requests", "failures", "exceptions"].
+
+        Returns:
+            dict: A dictionary where the keys are the export types and the values are the CSV exports as strings.
+        """
+        options = options or ["requests", "failures", "exceptions"]
+        return {option: self.get_csv_export(option) for option in options}

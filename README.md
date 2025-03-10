@@ -6,13 +6,6 @@
 pip install locust-on-databricks
 ```
 
-## Planned Features
-
-* adding an option to export to html `runner.export_html(path)`
-* adding option to download exceptions and failures: `runner.export_exceptions(path), runners.export_failures(path)`
-* adding option to download all: `runner.export(path)`
-* adding block_until_end_of_swarm: `runner.block_until_end_of_swarm(timeout_in_seconds=...)`
-
 ## Usage
 
 ### OOTB Examples
@@ -52,6 +45,31 @@ Start your locust server:
 
 ```python
 runner.start_locust()
+```
+
+Wait for running locust swarm to finish
+
+```python
+runner.block_until_end_of_swarm(
+    timeout_in_seconds=300,
+    # check_every_n_seconds=5, # poll every n seconds default is 5s
+)
+```
+
+Capture results/snapshots into a directory
+
+This will create:
+
+1. request metrics csv
+2. failures csv
+3. exceptions csv
+4. html report
+
+```python
+runner.save_artifacts(
+    # save_directory="artifacts" # default is artifacts but recommended you save to volumes
+    # file_prefix="" # default is empty prefix to your artifacts
+)
 ```
 
 Stop your locust server:
