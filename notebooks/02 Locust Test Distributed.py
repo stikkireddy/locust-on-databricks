@@ -1,6 +1,6 @@
 # Databricks notebook source
-%pip install locust-on-databricks
-%restart_python
+# MAGIC %pip install locust-on-databricks
+# MAGIC %restart_python
 
 # COMMAND ----------
 
@@ -15,8 +15,12 @@ runner.distributed().set_initial_swarm(
   host="https://google.com",
   user_count=30,
   spawn_rate=2,
-  # run_time = "5m"
+  run_time = "5m"
 ).start_locust()
+
+# COMMAND ----------
+
+runner.block_until_end_of_swarm(100000)
 
 # COMMAND ----------
 
