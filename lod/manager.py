@@ -26,6 +26,15 @@ def get_rfc_1918_network_ip():
     return None
 
 
+def is_process_open(host: str, port: int, timeout: int = 10) -> bool:
+    """Check if a process is listening on a given host and port."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(timeout)
+        return sock.connect_ex((host, port)) == 0  # Returns 0 if open, else error code
+
+
+
+
 class LocustUtils:
 
     @staticmethod
@@ -56,6 +65,9 @@ class LocustUtils:
     def start_standard_on_current_node(file_name: str = "locustfile.py", web_port: int = 8089) -> int:
         master_cmd = f"locust -f {file_name} --web-port {web_port}"
         process = subprocess.Popen(master_cmd.split())
+        print(f"Locust started with pid: {process.pid}")
+        # Wait for the process to start
+        is_process_open("0.0.0.0", web_port)
         return process.pid
 
     @staticmethod
@@ -71,6 +83,7 @@ class LocustUtils:
         worker_cmd = f"locust -f - --worker --master-host {driver_ip} --processes {num_processes}"
         process = subprocess.Popen(worker_cmd.split())
         return process.pid
+
 
 
 class LocustBaseManager(abc.ABC):

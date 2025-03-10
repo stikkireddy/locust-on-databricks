@@ -7,7 +7,7 @@ from lod.proxy import get_proxy_settings_for_port
 
 class LocustRunner:
 
-    def __init__(self, port: int, locustfile_path: str | Path):
+    def __init__(self, locustfile_path: str | Path, port: int = 8089):
         self._web_port = port
         self._locustfile_path = locustfile_path
         self._distributed = False
@@ -44,18 +44,13 @@ class LocustRunner:
         self._locust_manager.kill()
         self._is_locust_running = False
 
-    def swarm(self,
+    def set_initial_swarm(self,
               host: str,
               user_count: int,
               spawn_rate: int,
               run_time: str = "5m"):
         if self._is_locust_running:
-            self._locust_client.swarm(
-                host=host,
-                user_count=user_count,
-                spawn_rate=spawn_rate,
-                run_time=run_time
-            )
+            raise Exception("Locust is already running. Please stop it before setting initial swarm parameters.")
         else:
             self._preloaded_locust_swarm = {
                 'host': host,
@@ -65,3 +60,24 @@ class LocustRunner:
             }
 
         return self
+
+    def run_swarm(self,
+                  host: str,
+                  user_count: int,
+                  spawn_rate: int,
+                  run_time: str = "5m"):
+        if self._is_locust_running:
+            self._locust_client.swarm(
+                host=host,
+                user_count=user_count,
+                spawn_rate=spawn_rate,
+                run_time=run_time
+            )
+        else:
+            raise Exception("Locust is not running. Please start Locust first.")
+
+    def stop_swarm(self):
+        if self._is_locust_running:
+            self._locust_client.stop_swarm()
+        else:
+            raise Exception("Locust is not running. Please start Locust first.")
