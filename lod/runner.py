@@ -27,7 +27,7 @@ class LocustRunner:
         print(f"Access Locust Web UI at {self._proxy_settings.get_proxy_url(ensure_ends_with_slash=True)}")
         if self._preloaded_locust_swarm:
             print("Preloaded swarm parameters:", self._preloaded_locust_swarm)
-            self.swarm(**self._preloaded_locust_swarm)
+            self.run_swarm(**self._preloaded_locust_swarm)
             self._preloaded_locust_swarm = None
         return pid
 
