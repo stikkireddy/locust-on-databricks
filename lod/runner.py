@@ -63,3 +63,5 @@ class LocustRunner:
                 'spawn_rate': spawn_rate,
                 'run_time': run_time
             }
+
+        return self
