@@ -93,7 +93,10 @@ class LocustRunner:
                 elif time.time() - start_time > timeout_in_seconds:
                     raise Exception("Timeout waiting for Locust to warm up.")
                 else:
-                    time.sleep(check_every_n_seconds)
+                    print("Locust swarm has finished.")
+                    break
+
+                time.sleep(check_every_n_seconds)
         else:
             raise Exception("Locust is not running. Please start Locust first.")
 
