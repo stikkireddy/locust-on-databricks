@@ -22,14 +22,15 @@ setup(
                 'pytest',
                 'pytest-pep8',
                 'pytest-cov',
-                'pyspark==3.4.1'
+                'pyspark==3.4.1',
+                'twine'
             ]
         },
     setup_requires=["setuptools_scm"],
     use_scm_version=True,
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: Apache 2.0 License",
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.11",
