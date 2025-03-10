@@ -1,6 +1,5 @@
 # Databricks notebook source
-# will publish to pypi soon
-%pip install git+https://github.com/stikkireddy/locust-on-databricks.git --upgrade
+%pip install locust-on-databricks
 %restart_python
 
 # COMMAND ----------
