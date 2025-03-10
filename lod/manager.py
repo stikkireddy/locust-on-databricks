@@ -134,18 +134,26 @@ class LocustSingleNodeManager(LocustBaseManager):
         )
 
 
+def get_spark():
+    from pyspark.sql import SparkSession
+    return SparkSession.getActiveSession()
+
+
+def active_worker_count():
+    spark = get_spark()
+    return int(spark.conf.get("spark.databricks.clusterUsageTags.clusterWorkers", "1"))
+
+
 class LocustDistributedManager(LocustBaseManager):
 
-    def __init__(self, file_name: str = "locustfile.py",
+    def __init__(self,
+                 file_name: str = "locustfile.py",
                  web_port: int = 8089,
                  process_to_core_count_ratio: float = 2.0):
         self._file_name = file_name
         self._web_port = web_port
         self._process_to_core_count_ratio = process_to_core_count_ratio
-        from pyspark.sql import SparkSession
-        self._spark = SparkSession.getActiveSession()
-        self._active_number_of_workers = int(
-            self._spark.conf.get("spark.databricks.clusterUsageTags.clusterWorkers", "1"))
+        self._active_number_of_workers = active_worker_count()
         self._worker_names = [f"worker-{i}" for i in range(self._active_number_of_workers)]
 
     def is_running(self) -> bool:
@@ -156,7 +164,7 @@ class LocustDistributedManager(LocustBaseManager):
             status = LocustUtils.is_running_on_current_node()
             return _executor, ip, status
 
-        results = self._spark \
+        results = get_spark() \
             .sparkContext \
             .parallelize(self._worker_names, self._active_number_of_workers) \
             .map(is_locust_running_on_executor).collect()
@@ -177,7 +185,7 @@ class LocustDistributedManager(LocustBaseManager):
             status = LocustUtils.kill_on_current_node()
             return _executor, ip, status
 
-        results = self._spark \
+        results = get_spark() \
             .sparkContext \
             .parallelize(self._worker_names, self._active_number_of_workers) \
             .map(kill_on_executor).collect()
