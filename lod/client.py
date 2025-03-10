@@ -90,7 +90,7 @@ class LocustClient:
             print(f"Error getting swarm state: {str(e)}")
             raise
 
-    def swarm_is_running(self) -> bool:
+    def swarm_is_active(self) -> bool:
         """
         Check if the Locust swarm is currently running.
 
@@ -101,7 +101,7 @@ class LocustClient:
             requests.RequestException: If there is an error communicating with the Locust server.
         """
         state = self.get_state()
-        return state is not None and state.lower() == "running"
+        return state is not None and state.lower() in ["running", "spawning"]
 
     def get_html_report(self) -> Optional[str]:
         """
