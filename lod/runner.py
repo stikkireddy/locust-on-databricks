@@ -81,7 +81,7 @@ class LocustRunner:
                 run_time=run_time
             )
 
-            timeout_seconds = 10
+            timeout_seconds = 60
             start_time = time.time()
             while True:
                 if self._locust_client.swarm_is_running():
