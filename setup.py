@@ -30,7 +30,6 @@ setup(
     use_scm_version=True,
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License-Expression: Apache-2.0",
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.11",
