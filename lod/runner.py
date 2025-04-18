@@ -47,8 +47,8 @@ class LocustRunner:
         )
         return self
 
-    def stop_locust(self):
-        self._locust_manager.kill()
+    def stop_locust(self, force: bool = False):
+        self._locust_manager.kill(force=force)
         self._is_locust_running = False
 
     def set_initial_swarm(self,

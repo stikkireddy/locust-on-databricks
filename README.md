@@ -134,6 +134,9 @@ runner.stop_swarm()
 
 **Starting a new swarm in the ui is bugged and the swarm rest api from the ui is not working.**
 
+**To make this project simpler to use at any given time, you can only run one locust cluster and swarm at a time,**
+**we do not keep track of pids or any other state.** 
+
 ## Disclaimer
 
 locust-on-databricks is not developed, endorsed not supported by Databricks. It is provided as-is; no warranty is

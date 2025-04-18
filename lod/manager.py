@@ -85,13 +85,18 @@ class LocustUtils:
         return False
 
     @staticmethod
-    def kill_on_current_node() -> bool:
+    def kill_on_current_node(force: bool = False) -> bool:
         killed = False
         for proc in psutil.process_iter(['pid', 'cmdline']):
             try:
                 cmdline = proc.info['cmdline']
                 if cmdline and any("locust" in part.lower() for part in cmdline):
-                    os.kill(proc.pid, signal.SIGTERM)
+                    if force:
+                        # kill -9
+                        os.kill(proc.pid, signal.SIGKILL)
+                    else:
+                        # kill -15
+                        os.kill(proc.pid, signal.SIGTERM)
                     killed = True
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
@@ -130,7 +135,7 @@ class LocustBaseManager(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def kill(self) -> bool:
+    def kill(self, force: bool = False) -> bool:
         pass
 
     @abc.abstractmethod
@@ -147,8 +152,8 @@ class LocustSingleNodeManager(LocustBaseManager):
     def is_running(self) -> bool:
         return LocustUtils.is_running_on_current_node()
 
-    def kill(self) -> bool:
-        return LocustUtils.kill_on_current_node()
+    def kill(self, force: bool = False) -> bool:
+        return LocustUtils.kill_on_current_node(force=force)
 
     def start(self) -> int:
         return LocustUtils.start_standard_on_current_node(
@@ -199,12 +204,12 @@ class LocustDistributedManager(LocustBaseManager):
 
         return all(running_states.values())
 
-    def kill(self) -> bool:
-        killed_states = {"driver": LocustUtils.kill_on_current_node()}
+    def kill(self, force: bool = False) -> bool:
+        killed_states = {"driver": LocustUtils.kill_on_current_node(force=force)}
 
         def kill_on_executor(_executor: str):
             ip = get_rfc_1918_network_ip()
-            status = LocustUtils.kill_on_current_node()
+            status = LocustUtils.kill_on_current_node(force=force)
             return _executor, ip, status
 
         results = get_spark() \
