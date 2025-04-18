@@ -1,5 +1,6 @@
 import abc
 import time
+from typing import List
 
 import psutil
 import socket
@@ -10,6 +11,27 @@ import subprocess
 
 import requests
 from requests import RequestException
+
+
+def listener_files() -> str:
+    """
+    Returns a list of csv files in lod.event_listeners directory.
+    """
+    from pathlib import Path
+    from lod import event_listeners
+
+    event_listeners_path = event_listeners.__file__
+
+    all_files_in_dir = Path(event_listeners_path).parent.glob("*.py")
+
+    # List all files in the directory
+    files: List[Path] = [f for f in all_files_in_dir if f.is_file() and f.name != "__init__.py"]
+
+    # Return the file names without the .py extension
+    return ",".join([str(f.absolute()) for f in files])
+
+
+LISTENER_FILES = listener_files()
 
 
 def get_rfc_1918_network_ip():
@@ -104,7 +126,7 @@ class LocustUtils:
 
     @staticmethod
     def start_standard_on_current_node(file_name: str = "locustfile.py", web_port: int = 8089) -> int:
-        master_cmd = f"locust -f {file_name} --web-port {web_port}"
+        master_cmd = f"locust -f {file_name},{LISTENER_FILES} --web-port {web_port}"
         process = subprocess.Popen(master_cmd.split())
         print(f"Locust started with pid: {process.pid}")
         # Wait for the process to start
@@ -113,7 +135,7 @@ class LocustUtils:
 
     @staticmethod
     def start_driver_on_current_node(file_name: str = "locustfile.py", web_port: int = 8089) -> int:
-        master_cmd = f"locust -f {file_name} --master --web-port {web_port}"
+        master_cmd = f"locust -f {file_name},{LISTENER_FILES} --master --web-port {web_port}"
         process = subprocess.Popen(master_cmd.split())
         # Wait for the process to start
         is_process_running("0.0.0.0", web_port)
