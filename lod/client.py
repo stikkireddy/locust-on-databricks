@@ -146,16 +146,16 @@ class LocustClient:
             print(f"Error starting swarm: {str(e)}")
             raise
 
-    def get_csv_exports(self, options: list[Literal["requests", "failures", "exceptions"]] = None) -> Optional[
+    def get_csv_exports(self, options: list[Literal["requests", "failures", "exceptions", "stats_history"]] = None) -> Optional[
         Dict[str, str]]:
         """
         Get multiple CSV exports.
 
         Args:
-            options: A list of CSV export types to retrieve. Defaults to ["requests", "failures", "exceptions"].
+            options: A list of CSV export types to retrieve. Defaults to ["requests", "failures", "exceptions", "stats_history"].
 
         Returns:
             dict: A dictionary where the keys are the export types and the values are the CSV exports as strings.
         """
-        options = options or ["requests", "failures", "exceptions"]
+        options = options or ["requests", "failures", "exceptions", "stats_history"]
         return {option: self.get_csv_export(option) for option in options}
